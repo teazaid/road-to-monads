@@ -1,7 +1,7 @@
 package io.registration.service
 
 import io.registration.models.db.{User, UserStatus}
-import io.registration.models.http.UserRequest
+import io.registration.models.http.{ConfirmationRequest, UserRequest}
 import io.registration.repository.UserRepository
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -9,6 +9,10 @@ import scala.concurrent.Future
 class UserService(userConfirmationService: UserConfirmationService,
                   userRepository: UserRepository,
                   userValidator: UserValidator) {
+  def confirmUser(confirmationRequest: ConfirmationRequest): Future[Unit] = {
+    userRepository.setStatus(confirmationRequest.login, UserStatus.Active)
+    Future.successful()
+  }
 
   def register(userRequest: UserRequest): Future[String] = {
     val validationResultF = userValidator.validate(userRequest).map { validateResult =>

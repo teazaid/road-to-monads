@@ -3,7 +3,8 @@ package io.registration.service
 import java.time.LocalDate
 
 import io.registration.models.db.User
-import io.registration.models.http.UserRequest
+import io.registration.models.db.UserStatus.UserStatus
+import io.registration.models.http.{ConfirmationRequest, UserRequest}
 import io.registration.repository.UserRepository
 import org.mockito.Matchers._
 import org.mockito.Mockito._
@@ -19,8 +20,10 @@ class UserServiceSpec extends FunSuite {
   private val login = "login"
   private val email = "email"
   private val userRequest = UserRequest(login, "password", "password", now, email)
+  private val confirmationToken = "confirmationToken"
+  private val confirmationRequest = ConfirmationRequest(login, confirmationToken)
 
-  private val successfullConfirmation = "done"
+  private val successfulConfirmation = "done"
 
   test("register valid user") {
 
@@ -30,7 +33,7 @@ class UserServiceSpec extends FunSuite {
 
     when(userValidatorMock.validate(userRequest)).thenReturn(Future.successful(Right[String, UserRequest](userRequest)))
     when(userRepositoryMock.insert(any(classOf[User]))).thenReturn(Future.successful(1))
-    when(userConfirmationServiceMock.confirmUser(userRequest.login, userRequest.email)).thenReturn(Future.successful(successfullConfirmation))
+    when(userConfirmationServiceMock.confirmUser(userRequest.login, userRequest.email)).thenReturn(Future.successful(successfulConfirmation))
 
     val userService = new UserService(userConfirmationServiceMock,
       userRepositoryMock,
@@ -39,11 +42,28 @@ class UserServiceSpec extends FunSuite {
     val registeredUserF = userService.register(userRequest)
     val registeredUser = Await.result(registeredUserF, timeout)
 
-    assert(registeredUser == successfullConfirmation)
+    assert(registeredUser == successfulConfirmation)
 
     verify(userValidatorMock).validate(any[UserRequest])
     verify(userRepositoryMock).insert(any[User])
     verify(userConfirmationServiceMock).confirmUser(login, email)
+  }
+
+  test("confirm user") {
+    val userRepositoryMock = mock(classOf[UserRepository])
+    val userValidatorMock = mock(classOf[UserValidator])
+    val userConfirmationServiceMock = mock(classOf[UserConfirmationService])
+
+    val userService = new UserService(userConfirmationServiceMock,
+      userRepositoryMock,
+      userValidatorMock)
+
+    val confirmationUserF = userService.confirmUser(confirmationRequest)
+    Await.result(confirmationUserF, timeout)
+
+    verify(userValidatorMock, times(0)).validate(any[UserRequest])
+    verify(userRepositoryMock, times(0)).insert(any[User])
+    verify(userRepositoryMock, times(1)).setStatus(anyString, any[UserStatus])
   }
 
   test("register invalid user") {
@@ -74,7 +94,7 @@ class UserServiceSpec extends FunSuite {
 
     when(userValidatorMock.validate(userRequest)).thenReturn(Future.successful(Right[String, UserRequest](userRequest)))
     when(userRepositoryMock.insert(any(classOf[User]))).thenReturn(Future.failed(new Exception("failed to insert user")))
-    when(userConfirmationServiceMock.confirmUser(userRequest.login, userRequest.email)).thenReturn(Future.successful(successfullConfirmation))
+    when(userConfirmationServiceMock.confirmUser(userRequest.login, userRequest.email)).thenReturn(Future.successful(successfulConfirmation))
 
     val userService = new UserService(userConfirmationServiceMock,
       userRepositoryMock,
