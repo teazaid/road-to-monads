@@ -11,7 +11,6 @@ class UserService(userConfirmationService: UserConfirmationService,
                   userValidator: UserValidator) {
   def confirmUser(confirmationRequest: ConfirmationRequest): Future[Unit] = {
     userRepository.setStatus(confirmationRequest.login, UserStatus.Active).map(_ => ())
-    Future.successful()
   }
 
   def register(userRequest: UserRequest): Future[String] = {

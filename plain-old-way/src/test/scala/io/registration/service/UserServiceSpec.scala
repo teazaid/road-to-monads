@@ -68,6 +68,25 @@ class UserServiceSpec extends FunSuite {
     verify(userRepositoryMock, times(1)).setStatus(anyString, any[UserStatus])
   }
 
+  test("confirm user and set status failed") {
+    val userRepositoryMock = mock(classOf[UserRepository])
+    val userValidatorMock = mock(classOf[UserValidator])
+    val userConfirmationServiceMock = mock(classOf[UserConfirmationService])
+
+    val userService = new UserService(userConfirmationServiceMock,
+      userRepositoryMock,
+      userValidatorMock)
+
+    when(userRepositoryMock.setStatus(confirmationRequest.login, UserStatus.Active)).thenReturn(Future.failed(new Exception("exception")))
+
+    val confirmationUserF = userService.confirmUser(confirmationRequest)
+    assert(Try(Await.result(confirmationUserF, timeout)).isFailure)
+
+    verify(userValidatorMock, times(0)).validate(any[UserRequest])
+    verify(userRepositoryMock, times(0)).insert(any[User])
+    verify(userRepositoryMock, times(1)).setStatus(anyString, any[UserStatus])
+  }
+
   test("register invalid user") {
 
     val userRepositoryMock = mock(classOf[UserRepository])
