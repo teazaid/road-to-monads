@@ -44,6 +44,7 @@ lazy val dependencies = /*libraryDependencies ++= */ List(
   "com.typesafe.slick" %% "slick" % "3.2.1",
   "com.h2database" % "h2" % "1.4.185",
   "ch.qos.logback" % "logback-classic" % "1.1.2",
-  "org.scalatest" %% "scalatest" % "3.2.0-SNAP7" % "test"
+  "org.scalatest" %% "scalatest" % "3.2.0-SNAP7" % "test",
+  "org.mockito" % "mockito-all" % "2.0.2-beta" % "test"
 )
 
