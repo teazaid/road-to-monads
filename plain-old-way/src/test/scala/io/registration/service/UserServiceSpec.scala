@@ -2,7 +2,7 @@ package io.registration.service
 
 import java.time.LocalDate
 
-import io.registration.models.db.User
+import io.registration.models.db.{User, UserStatus}
 import io.registration.models.db.UserStatus.UserStatus
 import io.registration.models.http.{ConfirmationRequest, UserRequest}
 import io.registration.repository.UserRepository
@@ -57,6 +57,8 @@ class UserServiceSpec extends FunSuite {
     val userService = new UserService(userConfirmationServiceMock,
       userRepositoryMock,
       userValidatorMock)
+
+    when(userRepositoryMock.setStatus(confirmationRequest.login, UserStatus.Active)).thenReturn(Future.successful(1))
 
     val confirmationUserF = userService.confirmUser(confirmationRequest)
     Await.result(confirmationUserF, timeout)

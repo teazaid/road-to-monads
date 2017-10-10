@@ -10,7 +10,7 @@ class UserService(userConfirmationService: UserConfirmationService,
                   userRepository: UserRepository,
                   userValidator: UserValidator) {
   def confirmUser(confirmationRequest: ConfirmationRequest): Future[Unit] = {
-    userRepository.setStatus(confirmationRequest.login, UserStatus.Active)
+    userRepository.setStatus(confirmationRequest.login, UserStatus.Active).map(_ => ())
     Future.successful()
   }
 
