@@ -33,7 +33,7 @@ class UserServiceSpec extends FunSuite {
 
     when(userValidatorMock.validate(userRequest)).thenReturn(Future.successful(Right[String, UserRequest](userRequest)))
     when(userRepositoryMock.insert(any(classOf[User]))).thenReturn(Future.successful(1))
-    when(userConfirmationServiceMock.confirmUser(userRequest.login, userRequest.email)).thenReturn(Future.successful(successfulConfirmation))
+    when(userConfirmationServiceMock.sendConfirmationEmail(userRequest.login, userRequest.email)).thenReturn(Future.successful(successfulConfirmation))
 
     val userService = new UserService(userConfirmationServiceMock,
       userRepositoryMock,
@@ -46,7 +46,7 @@ class UserServiceSpec extends FunSuite {
 
     verify(userValidatorMock).validate(any[UserRequest])
     verify(userRepositoryMock).insert(any[User])
-    verify(userConfirmationServiceMock).confirmUser(login, email)
+    verify(userConfirmationServiceMock).sendConfirmationEmail(login, email)
   }
 
   test("confirm user") {
@@ -104,7 +104,7 @@ class UserServiceSpec extends FunSuite {
 
     verify(userValidatorMock).validate(any[UserRequest])
     verify(userRepositoryMock, times(0)).insert(any[User])
-    verify(userConfirmationServiceMock, times(0)).confirmUser(anyString, anyString)
+    verify(userConfirmationServiceMock, times(0)).sendConfirmationEmail(anyString, anyString)
   }
 
   test("register valid user with insertion failure") {
@@ -115,7 +115,7 @@ class UserServiceSpec extends FunSuite {
 
     when(userValidatorMock.validate(userRequest)).thenReturn(Future.successful(Right[String, UserRequest](userRequest)))
     when(userRepositoryMock.insert(any(classOf[User]))).thenReturn(Future.failed(new Exception("failed to insert user")))
-    when(userConfirmationServiceMock.confirmUser(userRequest.login, userRequest.email)).thenReturn(Future.successful(successfulConfirmation))
+    when(userConfirmationServiceMock.sendConfirmationEmail(userRequest.login, userRequest.email)).thenReturn(Future.successful(successfulConfirmation))
 
     val userService = new UserService(userConfirmationServiceMock,
       userRepositoryMock,
@@ -126,7 +126,7 @@ class UserServiceSpec extends FunSuite {
 
     verify(userValidatorMock).validate(any[UserRequest])
     verify(userRepositoryMock).insert(any[User])
-    verify(userConfirmationServiceMock, times(0)).confirmUser(anyString, anyString)
+    verify(userConfirmationServiceMock, times(0)).sendConfirmationEmail(anyString, anyString)
   }
 
   test("register valid user with failed confirmation") {
@@ -137,7 +137,7 @@ class UserServiceSpec extends FunSuite {
 
     when(userValidatorMock.validate(userRequest)).thenReturn(Future.successful(Right[String, UserRequest](userRequest)))
     when(userRepositoryMock.insert(any(classOf[User]))).thenReturn(Future.successful(1))
-    when(userConfirmationServiceMock.confirmUser(userRequest.login, userRequest.email)).thenReturn(Future.failed(new Exception("failed to sent")))
+    when(userConfirmationServiceMock.sendConfirmationEmail(userRequest.login, userRequest.email)).thenReturn(Future.failed(new Exception("failed to sent")))
 
     val userService = new UserService(userConfirmationServiceMock,
       userRepositoryMock,
@@ -148,6 +148,6 @@ class UserServiceSpec extends FunSuite {
 
     verify(userValidatorMock).validate(any[UserRequest])
     verify(userRepositoryMock).insert(any[User])
-    verify(userConfirmationServiceMock).confirmUser(anyString, anyString)
+    verify(userConfirmationServiceMock).sendConfirmationEmail(anyString, anyString)
   }
 }

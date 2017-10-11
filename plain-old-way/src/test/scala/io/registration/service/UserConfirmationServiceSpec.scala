@@ -11,7 +11,7 @@ class UserConfirmationServiceSpec extends FunSuite {
 
   test("confirmUser should return confirmation token") {
     val userConfirmationService = new UserConfirmationService()
-    assert(Await.result(userConfirmationService.confirmUser(login, email), timeout) == (login + email))
+    assert(Await.result(userConfirmationService.sendConfirmationEmail(login, email), timeout) == (login + email))
   }
 
 }

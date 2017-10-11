@@ -30,7 +30,7 @@ class UserService(userConfirmationService: UserConfirmationService,
         validatedUser.email,
         UserStatus.NonActive
       ))
-      confirmation <- userConfirmationService.confirmUser(userRequest.login, userRequest.email)
+      confirmation <- userConfirmationService.sendConfirmationEmail(userRequest.login, userRequest.email)
     } yield confirmation
   }
 }
