@@ -15,8 +15,11 @@ import scala.concurrent.duration._
 class UserRepositorySpec extends FunSuite {
   private val timeout = 5.seconds
   private val db = Database.forConfig("local-db", ConfigFactory.parseResources("slick-local.conf"))
+
   private val login = "login"
-  private val UserToInsert = User(None, login, "2312", LocalDate.now(), "email@s.rt", UserStatus.NonActive)
+  private val email = "email@s.rt"
+
+  private val UserToInsert = User(None, login, "2312", LocalDate.now(), email, UserStatus.NonActive)
   private val userRepository = new UserRepository(db)
 
   test("populate db and get data") {
@@ -25,11 +28,13 @@ class UserRepositorySpec extends FunSuite {
     val findResultF = for {
       _ <- db.run(users.schema.create)
       _ <- userRepository.insert(UserToInsert)
-      findResult <- userRepository.findByLogin(login)
-    } yield findResult
+      findByLoginResult <- userRepository.findByLogin(login)
+      findByEmailResult <- userRepository.findByEmail(email)
+    } yield (findByLoginResult, findByEmailResult)
 
     val user = Await.result(findResultF, timeout)
-    assert(user.get == UserToInsert.copy(id = Some(1)))
+    assert(user._1.get == UserToInsert.copy(id = Some(1)))
+    assert(user._2.get == UserToInsert.copy(id = Some(1)))
   }
 
   test("activate user") {

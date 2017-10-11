@@ -18,30 +18,45 @@ class UserValidatorSpec extends FunSuite {
   private val timeout = 5.second
 
   private val login = "login"
-  private val baseUserRequest = UserRequest(login, "1", "1", now.minusYears(16), "test@test.de")
+  private val email = "email"
+  private val baseUserRequest = UserRequest(login, "1", "1", now.minusYears(16), email)
 
-  private val user = User(Some(1), login, "", now, "", UserStatus.Active)
+  private val user = User(Some(1), login, "", now, email, UserStatus.Active)
 
   test("login already exists") {
     val userRepositoryMock = mock(classOf[UserRepository])
     when(userRepositoryMock.findByLogin(login)).thenReturn(Future.successful(Some(user)))
+    when(userRepositoryMock.findByEmail(email)).thenReturn(Future.successful(None))
 
     val userValidator = new UserValidator(userRepositoryMock)
     Await.result(userValidator.validate(baseUserRequest), timeout) match {
-      case Left(msg) => assert(msg == s"User ${login} already exists")
+      case Left(msg) => assert(msg == s"User ${login} is already exists")
       case _ => fail("user should be created in the db")
     }
 
     verify(userRepositoryMock).findByLogin(login)
+    verify(userRepositoryMock).findByEmail(email)
   }
 
   test("email already exists") {
+    val userRepositoryMock = mock(classOf[UserRepository])
+    when(userRepositoryMock.findByLogin(login)).thenReturn(Future.successful(None))
+    when(userRepositoryMock.findByEmail(email)).thenReturn(Future.successful(Some(user)))
 
+    val userValidator = new UserValidator(userRepositoryMock)
+    Await.result(userValidator.validate(baseUserRequest), timeout) match {
+      case Left(msg) => assert(msg == s"User with email ${email} is already exists")
+      case _ => fail("user should be created in the db")
+    }
+
+    verify(userRepositoryMock).findByLogin(login)
+    verify(userRepositoryMock).findByEmail(email)
   }
 
   test("password is not equal to confirmed password") {
     val userRepositoryMock = mock(classOf[UserRepository])
     when(userRepositoryMock.findByLogin(login)).thenReturn(Future.successful(Some(user)))
+    when(userRepositoryMock.findByEmail(email)).thenReturn(Future.successful(None))
 
     val userValidator = new UserValidator(userRepositoryMock)
     Await.result(userValidator.validate(baseUserRequest.copy(password = "2")), timeout) match {
@@ -49,12 +64,14 @@ class UserValidatorSpec extends FunSuite {
       case _ => fail("Password validation should fail")
     }
 
-    verify(userRepositoryMock).findByLogin(anyString)
+    verify(userRepositoryMock).findByLogin(login)
+    verify(userRepositoryMock).findByEmail(email)
   }
 
-  test("is too young") {
+  test("user is too young") {
     val userRepositoryMock = mock(classOf[UserRepository])
     when(userRepositoryMock.findByLogin(login)).thenReturn(Future.successful(Some(user)))
+    when(userRepositoryMock.findByEmail(email)).thenReturn(Future.successful(None))
 
     val userValidator = new UserValidator(userRepositoryMock)
     val bDay = now.minusYears(1)
@@ -63,10 +80,22 @@ class UserValidatorSpec extends FunSuite {
       case _ => fail("Password validation should fail")
     }
 
-    verify(userRepositoryMock).findByLogin(anyString)
+    verify(userRepositoryMock).findByLogin(login)
+    verify(userRepositoryMock).findByEmail(email)
   }
 
   test("validation successful") {
+    val userRepositoryMock = mock(classOf[UserRepository])
+    when(userRepositoryMock.findByLogin(login)).thenReturn(Future.successful(None))
+    when(userRepositoryMock.findByEmail(email)).thenReturn(Future.successful(None))
 
+    val userValidator = new UserValidator(userRepositoryMock)
+    Await.result(userValidator.validate(baseUserRequest), timeout) match {
+      case Right(actualUserRequest) => assert(actualUserRequest == baseUserRequest)
+      case _ => fail("user should be valid")
+    }
+
+    verify(userRepositoryMock).findByLogin(login)
+    verify(userRepositoryMock).findByEmail(email)
   }
 }

@@ -21,6 +21,10 @@ class UserRepository(db: H2Profile.backend.Database) {
     db.run(users.filter(_.login === login).result.headOption)
   }
 
+  def findByEmail(email: String): Future[Option[User]] = {
+    db.run(users.filter(_.email === email).result.headOption)
+  }
+
   def setStatus(login: String, status: UserStatus.Value): Future[Int] = {
     val updateStatusAction = users.filter(_.login === login).map(_.status).update(UserStatus.Active)
     db.run(updateStatusAction)
