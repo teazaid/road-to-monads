@@ -14,21 +14,28 @@ lazy val root = (project in file("."))
     name := "root",
     commonSettings,
     libraryDependencies ++= dependencies
-  ).aggregate(plainOld, monadic)
+  ).aggregate(plainOld, monadic, models)
+
+lazy val models = (project in file("models"))
+  .settings(
+    name := "models",
+    commonSettings,
+    libraryDependencies ++= dependencies
+  )
 
 lazy val plainOld = (project in file("plain-old-way"))
   .settings(
     name := "plain-old",
     commonSettings,
     libraryDependencies ++= dependencies
-  )
+  ).dependsOn(models)
 
 lazy val monadic = (project in file("monadic-way"))
   .settings(
     name := "monadic",
     commonSettings,
     libraryDependencies ++= dependencies
-  )
+  ).dependsOn(models)
 
 val akka_http_version = "10.0.9"
 val akka_http_circe_version = "1.18.0"

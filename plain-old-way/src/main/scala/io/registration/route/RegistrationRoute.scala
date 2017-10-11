@@ -4,12 +4,12 @@ import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.ValidationRejection
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
-import io.registration.models.http.{ConfirmationRequest, UserRequest}
 import io.registration.service.UserService
 
 import scala.util.Success
 import FailFastCirceSupport._
 import io.circe.generic.auto._
+import io.registration.models.http.{ConfirmationRequest, UserRequest}
 
 class RegistrationRoute(userService: UserService) {
 

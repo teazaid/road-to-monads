@@ -3,7 +3,6 @@ package io.registration.route
 import akka.http.scaladsl.model.{HttpEntity, MediaTypes}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.util.ByteString
-import io.registration.models.http.{ConfirmationRequest, UserRequest}
 import io.registration.service.UserService
 import org.scalatest.{Matchers, WordSpec}
 import org.mockito.Mockito._
@@ -12,6 +11,7 @@ import org.mockito.Matchers._
 import scala.concurrent.Future
 import io.circe.generic.auto._
 import io.circe.syntax._
+import io.registration.models.http.{ConfirmationRequest, UserRequest}
 
 class RegistrationRouteSpec extends WordSpec with Matchers with ScalatestRouteTest {
 

@@ -2,7 +2,6 @@ package io.registration.config
 
 import com.typesafe.config.Config
 import io.registration.models.configs.{AppConfig, ConfirmationServiceSettings, DBSettings}
-
 import scala.util.Try
 
 class ConfigurationManager(config: Config) {
