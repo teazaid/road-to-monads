@@ -13,8 +13,8 @@ import scala.concurrent.Future
 
 class UserService {
 
-  type ConfirmUserAction[T] = Reader[(UserRepository, H2Profile.backend.Database), T]
-  type RegisterAction[T] = Reader[(UserRepository, H2Profile.backend.Database, UserConfirmationService, UserValidator), T]
+  type ConfirmUserAction[T] = Reader[(UserRepository, H2Profile.backend.DatabaseDef), T]
+  type RegisterAction[T] = Reader[(UserRepository, H2Profile.backend.DatabaseDef, UserConfirmationService, UserValidator), T]
 
   def confirmUser(confirmationRequest: ConfirmationRequest): ConfirmUserAction[Future[Unit]] = Reader { case (userRepository, db) =>
     userRepository.setStatus(confirmationRequest.login, UserStatus.Active).run(db).map(_ => ())
