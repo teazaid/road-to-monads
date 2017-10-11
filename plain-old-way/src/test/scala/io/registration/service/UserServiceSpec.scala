@@ -19,7 +19,7 @@ class UserServiceSpec extends FunSuite {
   private val now = LocalDate.now
   private val login = "login"
   private val email = "email"
-  private val userRequest = UserRequest(login, "password", "password", now, email)
+  private val userRequest = UserRequest(login, "password", "password", "2017-01-10", email)
   private val confirmationToken = "confirmationToken"
   private val confirmationRequest = ConfirmationRequest(login, confirmationToken)
 

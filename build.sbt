@@ -31,7 +31,7 @@ lazy val monadic = (project in file("monadic-way"))
   )
 
 val akka_http_version = "10.0.9"
-val akka_http_circe_version = "1.17.0"
+val akka_http_circe_version = "1.18.0"
 val io_circe_version = "0.8.0"
 
 lazy val dependencies = /*libraryDependencies ++= */ List(
@@ -40,11 +40,14 @@ lazy val dependencies = /*libraryDependencies ++= */ List(
   "io.circe" %% "circe-core" % io_circe_version,
   "io.circe" %% "circe-generic" % io_circe_version,
   "io.circe" %% "circe-parser" % io_circe_version,
+  "io.circe" %% "circe-java8" % io_circe_version,
+
   "com.typesafe" % "config" % "1.3.1",
   "com.typesafe.slick" %% "slick" % "3.2.1",
   "com.h2database" % "h2" % "1.4.185",
   "ch.qos.logback" % "logback-classic" % "1.1.2",
   "org.scalatest" %% "scalatest" % "3.2.0-SNAP7" % "test",
-  "org.mockito" % "mockito-all" % "2.0.2-beta" % "test"
+  "org.mockito" % "mockito-all" % "2.0.2-beta" % "test",
+  "com.typesafe.akka" %% "akka-http-testkit" % akka_http_version % "test"
 )
 

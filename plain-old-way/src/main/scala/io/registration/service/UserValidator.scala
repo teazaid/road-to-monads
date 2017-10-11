@@ -35,7 +35,7 @@ class UserValidator(userRepository: UserRepository) {
 
   private def validateAge(userRequest: UserRequest): Future[Either[String, UserRequest]] = {
     val now = LocalDate.now
-    if (now.getYear - userRequest.birthday.getYear <= 15) {
+    if (now.getYear - LocalDate.parse(userRequest.birthday).getYear <= 15) {
       Future.successful(Left[String, UserRequest]("User is below 15"))
     } else {
       Future.successful(Right[String, UserRequest](userRequest))

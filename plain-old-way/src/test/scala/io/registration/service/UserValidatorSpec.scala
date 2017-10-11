@@ -1,6 +1,7 @@
 package io.registration.service
 
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 import io.registration.models.db.{User, UserStatus}
 import io.registration.models.http.UserRequest
@@ -19,7 +20,8 @@ class UserValidatorSpec extends FunSuite {
 
   private val login = "login"
   private val email = "email"
-  private val baseUserRequest = UserRequest(login, "1", "1", now.minusYears(16), email)
+
+  private val baseUserRequest = UserRequest(login, "1", "1", now.minusYears(16).format(DateTimeFormatter.ISO_LOCAL_DATE), email)
 
   private val user = User(Some(1), login, "", now, email, UserStatus.Active)
 
@@ -74,7 +76,7 @@ class UserValidatorSpec extends FunSuite {
     when(userRepositoryMock.findByEmail(email)).thenReturn(Future.successful(None))
 
     val userValidator = new UserValidator(userRepositoryMock)
-    val bDay = now.minusYears(1)
+    val bDay = now.minusYears(1).format(DateTimeFormatter.ISO_LOCAL_DATE)
     Await.result(userValidator.validate(baseUserRequest.copy(birthday = bDay)), timeout) match {
       case Left(msg) => assert(msg == "User is below 15")
       case _ => fail("Password validation should fail")
