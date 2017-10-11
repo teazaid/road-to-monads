@@ -1,7 +1,5 @@
 package io.registration.route
 
-import java.time.LocalDate
-
 import akka.http.scaladsl.model.{HttpEntity, MediaTypes}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.util.ByteString
