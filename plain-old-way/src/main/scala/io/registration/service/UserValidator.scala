@@ -3,19 +3,24 @@ package io.registration.service
 import java.time.LocalDate
 
 import io.registration.models.http.UserRequest
+import io.registration.repository.UserRepository
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class UserValidator {
+class UserValidator(userRepository: UserRepository) {
+
   def validate(userRequest: UserRequest): Future[Either[String, UserRequest]] = {
     for {
       password <- validatePassword(userRequest)
       age <- validateAge(userRequest)
+      login <- validateLogin(userRequest)
     } yield {
       for {
         _ <- password
-        a <- age
-      } yield a
+        _ <- age
+        l <- login
+      } yield l
     }
   }
 
@@ -32,6 +37,15 @@ class UserValidator {
       Future.successful(Left[String, UserRequest]("User is below 15"))
     } else {
       Future.successful(Right[String, UserRequest](userRequest))
+    }
+  }
+
+  private def validateLogin(userRequest: UserRequest): Future[Either[String, UserRequest]] = {
+    userRepository.findByLogin(userRequest.login).map { userOpt =>
+      userOpt match {
+        case Some(user) => Left[String, UserRequest](s"User ${user.login} already exists")
+        case None => Right[String, UserRequest](userRequest)
+      }
     }
   }
 }

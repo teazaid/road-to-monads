@@ -1,15 +1,13 @@
 package io.registration.repository
 
 import java.time.LocalDate
-
 import com.typesafe.config.ConfigFactory
 import io.registration.models.db.tables.UserTable
 import io.registration.models.db.{User, UserStatus}
-import org.scalatest.{FunSuite, SequentialNestedSuiteExecution}
+import org.scalatest.FunSuite
 import slick.jdbc.H2Profile.api._
 import slick.jdbc.H2Profile.backend.Database
 import slick.lifted.TableQuery
-
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
