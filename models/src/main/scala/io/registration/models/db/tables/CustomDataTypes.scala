@@ -2,7 +2,6 @@ package io.registration.models.db.tables
 
 import java.sql.Date
 import java.time.LocalDate
-
 import io.registration.models.db.UserStatus
 import io.registration.models.db.UserStatus.UserStatus
 import slick.jdbc.H2Profile.api._
