@@ -9,22 +9,20 @@ import FailFastCirceSupport._
 import akka.http.scaladsl.server
 import cats.data.Reader
 import io.circe.generic.auto._
-import io.monadic.repository.UserRepository
+import io.monadic.di.Env
 import io.registration.models.http.{ConfirmationRequest, UserRequest}
-import slick.jdbc.H2Profile
 
 import scala.util.Success
 
 
 class RegistrationRoute {
+  type RegisterAction[T] = Reader[Env, T]
 
-  type RegisterAction[T] = Reader[(UserService, UserRepository, H2Profile.backend.DatabaseDef, UserConfirmationService, UserValidator), T]
-
-  val route: RegisterAction[server.Route] = Reader { case (userService, ur, db, uconf, uv) =>
+  val route: RegisterAction[server.Route] = Reader { env =>
     path("sign-up") {
       post {
         entity(as[UserRequest]) { request =>
-          onComplete(userService.register(request).run((ur, db, uconf, uv))) { status =>
+          onComplete(env.userService.register(request).run(env)) { status =>
             status match {
               case Success(msg) => complete(HttpEntity(ContentTypes.`application/json`, msg))
               case _ => reject(ValidationRejection("error happened"))
@@ -35,7 +33,7 @@ class RegistrationRoute {
     } ~ path("confirm") {
       get {
         parameters(('login, 'token)).as(ConfirmationRequest) { confirmationRequest =>
-          onComplete(userService.confirmUser(confirmationRequest).run((ur, db))) { status =>
+          onComplete(env.userService.confirmUser(confirmationRequest).run(env)) { status =>
             status match {
               case Success(_) => complete(HttpEntity(ContentTypes.`application/json`, ""))
               case _ => reject(ValidationRejection("error happened"))

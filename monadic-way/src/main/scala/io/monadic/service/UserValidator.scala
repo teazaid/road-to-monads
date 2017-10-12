@@ -1,25 +1,22 @@
 package io.monadic.service
 
 import java.time.LocalDate
-
 import cats.data.Reader
+import io.monadic.di.Env
 import io.registration.models.http.UserRequest
-import io.monadic.repository.UserRepository
-import slick.jdbc.H2Profile
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class UserValidator {
 
-  type ValidationAction[T] = Reader[(UserRepository, H2Profile.backend.Database), T]
+  type ValidationAction[T] = Reader[Env, T]
 
-  def validate(userRequest: UserRequest): ValidationAction[Future[Either[String, UserRequest]]] = Reader { case (userRepository, db) =>
+  def validate(userRequest: UserRequest): ValidationAction[Future[Either[String, UserRequest]]] = Reader { env =>
     for {
       password <- validatePassword(userRequest)
       age <- validateAge(userRequest)
-      login <- validateLogin(userRequest).run((userRepository, db))
-      email <- validateEmail(userRequest).run((userRepository, db))
+      login <- validateLogin(userRequest).run(env)
+      email <- validateEmail(userRequest).run(env)
     } yield {
       for {
         _ <- password
@@ -46,8 +43,8 @@ class UserValidator {
     }
   }
 
-  private def validateLogin(userRequest: UserRequest): ValidationAction[Future[Either[String, UserRequest]]] = Reader { case (userRepository, db) =>
-    userRepository.findByLogin(userRequest.login).run(db).map { userOpt =>
+  private def validateLogin(userRequest: UserRequest): ValidationAction[Future[Either[String, UserRequest]]] = Reader { env =>
+    env.userRepository.findByLogin(userRequest.login).run(env).map { userOpt =>
       userOpt match {
         case Some(user) => Left[String, UserRequest](s"User ${user.login} is already exists")
         case None => Right[String, UserRequest](userRequest)
@@ -55,8 +52,8 @@ class UserValidator {
     }
   }
 
-  private def validateEmail(userRequest: UserRequest): ValidationAction[Future[Either[String, UserRequest]]] = Reader { case (userRepository, db) =>
-    userRepository.findByEmail(userRequest.email).run(db).map { userOpt =>
+  private def validateEmail(userRequest: UserRequest): ValidationAction[Future[Either[String, UserRequest]]] = Reader { env =>
+    env.userRepository.findByEmail(userRequest.email).run(env).map { userOpt =>
       userOpt match {
         case Some(user) => Left[String, UserRequest](s"User with email ${user.email} is already exists")
         case None => Right[String, UserRequest](userRequest)
