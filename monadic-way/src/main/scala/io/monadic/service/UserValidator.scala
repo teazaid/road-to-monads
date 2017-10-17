@@ -1,22 +1,25 @@
 package io.monadic.service
 
 import java.time.LocalDate
-import cats.data.Reader
+
+import cats.data.Kleisli
+import cats.instances.future._
 import io.monadic.di.Env
 import io.registration.models.http.UserRequest
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class UserValidator {
 
-  type ValidationAction[T] = Reader[Env, T]
+  type ValidationAction[T] = Kleisli[Future, Env, Either[String, T]]
 
-  def validate(userRequest: UserRequest): ValidationAction[Future[Either[String, UserRequest]]] = Reader { env =>
+  def validate(userRequest: UserRequest): ValidationAction[UserRequest] =
     for {
       password <- validatePassword(userRequest)
       age <- validateAge(userRequest)
-      login <- validateLogin(userRequest).run(env)
-      email <- validateEmail(userRequest).run(env)
+      login <- validateLogin(userRequest)
+      email <- validateEmail(userRequest)
     } yield {
       for {
         _ <- password
@@ -25,16 +28,17 @@ class UserValidator {
         l <- login
       } yield l
     }
-  }
 
-  private def validatePassword(userRequest: UserRequest): Future[Either[String, UserRequest]] =
+
+  private def validatePassword(userRequest: UserRequest): ValidationAction[UserRequest] = Kleisli { _ =>
     if (userRequest.password != userRequest.confirmedPassword)
       Future.successful(Left[String, UserRequest]("Password doesn't equal to confirmed password"))
     else
       Future.successful(Right[String, UserRequest](userRequest))
+  }
 
 
-  private def validateAge(userRequest: UserRequest): Future[Either[String, UserRequest]] = {
+  private def validateAge(userRequest: UserRequest): ValidationAction[UserRequest] = Kleisli { _ =>
     val now = LocalDate.now
     if (now.getYear - LocalDate.parse(userRequest.birthday).getYear <= 15) {
       Future.successful(Left[String, UserRequest]("User is below 15"))
@@ -43,23 +47,22 @@ class UserValidator {
     }
   }
 
-  private def validateLogin(userRequest: UserRequest): ValidationAction[Future[Either[String, UserRequest]]] = Reader { env =>
-    env.userRepository.findByLogin(userRequest.login).run(env).map { userOpt =>
-      userOpt match {
-        case Some(user) => Left[String, UserRequest](s"User ${user.login} is already exists")
-        case None => Right[String, UserRequest](userRequest)
-      }
-    }
+  private def validateLogin(userRequest: UserRequest): ValidationAction[UserRequest] = for {
+    env <- Env.all
+    userOpt <- env.userRepository.findByLogin(userRequest.login)
+  } yield userOpt match {
+    case Some(user) => Left[String, UserRequest](s"User ${user.login} is already exists")
+    case None => Right[String, UserRequest](userRequest)
   }
 
-  private def validateEmail(userRequest: UserRequest): ValidationAction[Future[Either[String, UserRequest]]] = Reader { env =>
-    env.userRepository.findByEmail(userRequest.email).run(env).map { userOpt =>
-      userOpt match {
-        case Some(user) => Left[String, UserRequest](s"User with email ${user.email} is already exists")
-        case None => Right[String, UserRequest](userRequest)
-      }
-    }
+  private def validateEmail(userRequest: UserRequest): ValidationAction[UserRequest] = for {
+    env <- Env.all
+    userOpt <- env.userRepository.findByEmail(userRequest.email)
+  } yield userOpt match {
+    case Some(user) => Left[String, UserRequest](s"User with email ${user.email} is already exists")
+    case None => Right[String, UserRequest](userRequest)
   }
+
 
 }
 

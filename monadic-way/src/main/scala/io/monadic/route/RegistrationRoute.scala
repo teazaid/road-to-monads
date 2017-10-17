@@ -33,8 +33,8 @@ class RegistrationRoute {
     } ~ path("confirm") {
       get {
         parameters(('login, 'token)).as(ConfirmationRequest) { confirmationRequest =>
-          onComplete(env.userService.confirmUser(confirmationRequest).run(env)) { status =>
-            status match {
+          onComplete(env.userService.confirmUser(confirmationRequest).run(env)) { result =>
+            result match {
               case Success(_) => complete(HttpEntity(ContentTypes.`application/json`, ""))
               case _ => reject(ValidationRejection("error happened"))
             }
@@ -43,6 +43,5 @@ class RegistrationRoute {
       }
     }
   }
-
 }
 

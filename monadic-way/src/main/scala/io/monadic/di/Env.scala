@@ -1,20 +1,16 @@
 package io.monadic.di
 
-import cats.data.Reader
+import cats.data.Kleisli
 import com.typesafe.config.ConfigFactory
 import io.monadic.repository.UserRepository
 import io.monadic.service.{UserConfirmationService, UserService, UserValidator}
 import slick.jdbc.H2Profile
 import slick.jdbc.H2Profile.backend.Database
 
-object Env {
-  val all = Reader[Env, Env](identity)
+import scala.concurrent.Future
 
-  val userRepository = all.map(_.userRepository)
-  val userValidator = all.map(_.userValidator)
-  val userConfirmationService = all.map(_.userConfirmationService)
-  val userService = all.map(_.userService)
-  val db = all.map(_.db)
+object Env {
+  val all = Kleisli[Future, Env, Env](env => Future.successful(env))
 }
 
 trait Env {

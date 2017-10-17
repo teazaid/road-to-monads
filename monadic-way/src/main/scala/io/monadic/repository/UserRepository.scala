@@ -1,6 +1,6 @@
 package io.monadic.repository
 
-import cats.data.Reader
+import cats.data.Kleisli
 import io.monadic.di.Env
 import io.registration.models.db.tables.CustomDataTypes._
 import io.registration.models.db.tables.UserTable
@@ -11,24 +11,24 @@ import slick.lifted.TableQuery
 import scala.concurrent.Future
 
 class UserRepository {
-    private val users = TableQuery[UserTable]
+  private val users = TableQuery[UserTable]
 
-  type DBAction[T] = Reader[Env, Future[T]]
+  type DBAction[T] = Kleisli[Future, Env, T]
 
-  def insert(user: User): DBAction[Int] = Reader { env =>
+  def insert(user: User): DBAction[Int] = Kleisli { env =>
     val insertAction = users += user
     env.db.run(insertAction)
   }
 
-  def findByLogin(login: String): DBAction[Option[User]] = Reader { env =>
+  def findByLogin(login: String): DBAction[Option[User]] = Kleisli { env =>
     env.db.run(users.filter(_.login === login).result.headOption)
   }
 
-  def findByEmail(email: String): DBAction[Option[User]] = Reader { env =>
+  def findByEmail(email: String): DBAction[Option[User]] = Kleisli { env =>
     env.db.run(users.filter(_.email === email).result.headOption)
   }
 
-  def setStatus(login: String, status: UserStatus.Value): DBAction[Int] = Reader { env =>
+  def setStatus(login: String, status: UserStatus.Value): DBAction[Int] = Kleisli { env =>
     val updateStatusAction = users.filter(_.login === login).map(_.status).update(UserStatus.Active)
     env.db.run(updateStatusAction)
   }
